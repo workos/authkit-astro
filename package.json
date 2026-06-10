@@ -1,0 +1,93 @@
+{
+  "name": "@workos/authkit-astro",
+  "version": "0.0.1",
+  "description": "Official WorkOS AuthKit SDK for Astro",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./client": {
+      "types": "./dist/client.d.ts",
+      "import": "./dist/client.js",
+      "require": "./dist/client.cjs"
+    },
+    "./AuthState.astro": "./components/AuthState.astro",
+    "./internal/shared": {
+      "types": "./dist/shared.d.ts",
+      "import": "./dist/shared.js",
+      "require": "./dist/shared.cjs"
+    },
+    "./internal/middleware": "./dist/internal/middleware.js",
+    "./internal/routes/login": "./dist/internal/routes/login.js",
+    "./internal/routes/signup": "./dist/internal/routes/signup.js",
+    "./internal/routes/callback": "./dist/internal/routes/callback.js",
+    "./internal/routes/logout": "./dist/internal/routes/logout.js",
+    "./internal/routes/me": "./dist/internal/routes/me.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "components",
+    "README.md",
+    "LICENSE"
+  ],
+  "workspaces": [
+    "example"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint . --deny-warnings",
+    "lint:fix": "oxlint . --fix",
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "workos",
+    "authkit",
+    "astro",
+    "astro-integration",
+    "withastro",
+    "authentication",
+    "auth"
+  ],
+  "author": "WorkOS",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/workos/authkit-astro.git"
+  },
+  "peerDependencies": {
+    "@workos-inc/node": "^8.0.0 || ^9.0.0",
+    "astro": "^4.0.0 || ^5.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@workos/authkit-session": "^0.5.3",
+    "nanostores": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "@workos-inc/node": "^9.2.0",
+    "astro": "^5.0.0",
+    "oxfmt": "^0.54.0",
+    "oxlint": "^1.69.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

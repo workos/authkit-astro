@@ -1,0 +1,8 @@
+{
+  "quoteProps": "consistent",
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 120,
+  "sortPackageJson": false,
+  "ignorePatterns": ["package-lock.json", "dist", "coverage", ".astro"]
+}

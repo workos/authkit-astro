@@ -1,0 +1,17 @@
+---
+import { toClientAuth } from '@workos/authkit-astro/internal/shared';
+
+// Serializes the client-safe auth snapshot into the page so the client store
+// (`@workos/authkit-astro/client`) hydrates synchronously — no round-trip.
+// Drop this in your layout's <head>:
+//
+//   import AuthState from '@workos/authkit-astro/AuthState.astro';
+//   <head>...<AuthState /></head>
+//
+// Tokens are never included (see toClientAuth). The `<` escape prevents a
+// `</script>` breakout if user data contains markup.
+const state = toClientAuth(Astro.locals.auth);
+const json = JSON.stringify(state).replace(/</g, '\\u003c');
+---
+
+<script is:inline set:html={`window.__AUTHKIT_STATE__ = ${json};`} />

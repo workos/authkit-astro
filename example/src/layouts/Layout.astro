@@ -1,0 +1,71 @@
+---
+import AuthState from '@workos/authkit-astro/AuthState.astro';
+import AuthStatus from '../components/AuthStatus.astro';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'WorkOS AuthKit + Astro' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {/* Hydrates the client auth store (@workos/authkit-astro/client) synchronously. */}
+    <AuthState />
+    <style>
+      :root {
+        font-family: system-ui, sans-serif;
+        line-height: 1.6;
+      }
+      body {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        color: #1a1a1a;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+      }
+      nav a {
+        margin-right: 1rem;
+      }
+      a {
+        color: #6363f1;
+      }
+      .auth-status {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        font-size: 0.9rem;
+      }
+      pre {
+        background: #f6f6f9;
+        padding: 1rem;
+        border-radius: 8px;
+        overflow-x: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+      </nav>
+      <AuthStatus />
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

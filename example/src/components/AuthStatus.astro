@@ -1,0 +1,20 @@
+---
+// Render off Astro.locals.auth (typed by @workos/authkit-astro)
+const { auth } = Astro.locals;
+---
+
+{
+  auth.user ? (
+    <div class="auth-status">
+      <span>
+        Signed in as <strong>{auth.user.email}</strong>
+      </span>
+      <a href="/logout">Sign out</a>
+    </div>
+  ) : (
+    <div class="auth-status">
+      <a href="/login">Sign in</a>
+      <a href="/signup">Sign up</a>
+    </div>
+  )
+}

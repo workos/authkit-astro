@@ -1,0 +1,36 @@
+---
+import UserBadge from '../components/UserBadge';
+import Layout from '../layouts/Layout.astro';
+
+const { auth } = Astro.locals;
+---
+
+<Layout title="WorkOS AuthKit + Astro">
+  <h1>WorkOS AuthKit + Astro</h1>
+  <p>
+    Powered by the <code>@workos/authkit-astro</code> integration. Middleware,
+    routes, the client session endpoint, and the env schema are all wired by
+    <code>workos()</code> in <code>astro.config.mjs</code>.
+  </p>
+
+  {
+    auth.user ? (
+      <p>
+        You're signed in. Visit the <a href="/dashboard">dashboard</a> or
+        <a href="/logout">sign out</a>.
+      </p>
+    ) : (
+      <p>
+        You're signed out. <a href="/login">Sign in</a> to reach the
+        <a href="/dashboard">dashboard</a>.
+      </p>
+    )
+  }
+
+  <h2>React island</h2>
+  <p>
+    A React component reading the session from the client store via
+    <code>@nanostores/react</code> (hydrated by <code>&lt;AuthState /&gt;</code>):
+    <strong><UserBadge client:load /></strong>
+  </p>
+</Layout>

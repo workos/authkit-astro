@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Protected by the middleware (protectedRoutes: ['/dashboard']); the guard here
+// just narrows the type for `auth.user`.
+const { auth } = Astro.locals;
+if (!auth.user) {
+  return Astro.redirect('/login?returnTo=/dashboard');
+}
+---
+
+<Layout title="Dashboard">
+  <h1>Dashboard</h1>
+  <p>This page requires authentication.</p>
+
+  <h2>User</h2>
+  <pre>{JSON.stringify(auth.user, null, 2)}</pre>
+
+  <h2>Session</h2>
+  <ul>
+    <li><strong>Session ID:</strong> {auth.sessionId}</li>
+    <li><strong>Organization:</strong> {auth.organizationId ?? '—'}</li>
+    <li><strong>Role:</strong> {auth.role ?? '—'}</li>
+  </ul>
+
+  <p><a href="/logout">Sign out</a></p>
+</Layout>

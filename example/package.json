@@ -1,0 +1,27 @@
+{
+  "name": "@workos/authkit-astro-example",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.0.0",
+    "@astrojs/react": "^4.0.0",
+    "@nanostores/react": "^1.0.0",
+    "@workos-inc/node": "^9.2.0",
+    "@workos/authkit-astro": "file:..",
+    "astro": "^5.0.0",
+    "nanostores": "^1.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0"
+  }
+}
