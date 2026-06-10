@@ -12,7 +12,8 @@ export default defineConfig({
     'internal/routes/logout': 'src/internal/routes/logout.ts',
     'internal/routes/me': 'src/internal/routes/me.ts',
   },
-  format: ['esm', 'cjs'],
+  // ESM-only, like the rest of the Astro ecosystem
+  format: ['esm'],
   // Public type surface only — internal entrypoints are consumed by Astro at
   // build time, not imported for their types, so emitting their .d.ts (which
   // would inline the ambient `astro:env/server` / `virtual:` decls) is avoided.
@@ -26,8 +27,7 @@ export default defineConfig({
   splitting: false,
   sourcemap: true,
   clean: true,
-  treeshake: true,
-  // Virtual / Astro-provided modules are resolved by the consuming app's build,
-  // not here. `astro`, `nanostores`, and the WorkOS packages stay external too.
+  // Tree-shaking is delegated to the consumer's bundler via `"sideEffects": false`
+  // in package.json.
   external: ['astro', 'astro:env/server', 'astro:middleware', /^virtual:/],
 });
