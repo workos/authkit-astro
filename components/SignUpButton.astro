@@ -1,0 +1,17 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+// Unstyled link to the sign-up route. See SignInButton.astro.
+
+interface Props extends HTMLAttributes<'a'> {
+  /** Path of the signup route (default `/signup`, the integration's default). */
+  path?: string;
+  /** Where to land after authentication. */
+  returnTo?: string;
+}
+
+const { path = '/signup', returnTo, ...rest } = Astro.props;
+const href = returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
+---
+
+<a {href} {...rest}><slot>Sign up</slot></a>

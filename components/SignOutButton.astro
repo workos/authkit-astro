@@ -1,0 +1,17 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+// Unstyled link to the logout route. See SignInButton.astro.
+
+interface Props extends HTMLAttributes<'a'> {
+  /** Path of the logout route (default `/logout`, the integration's default). */
+  path?: string;
+  /** Where to land after signing out (overrides the configured afterSignOutUrl). */
+  returnTo?: string;
+}
+
+const { path = '/logout', returnTo, ...rest } = Astro.props;
+const href = returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
+---
+
+<a {href} {...rest}><slot>Sign out</slot></a>

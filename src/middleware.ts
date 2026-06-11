@@ -1,43 +1,14 @@
-import type { MiddlewareHandler } from 'astro';
-import type { AuthResult } from '@workos/authkit-session';
+import type { MiddlewareHandler, MiddlewareNext } from 'astro';
+import { buildAuth, setActiveSignInPath } from './auth.js';
 import { configureAuthKit, getInstance } from './config.js';
-import type { AuthKitAuth, AuthkitMiddlewareOptions, ProtectedRoutes } from './types.js';
+import { matchesRoute } from './matcher.js';
+import type { AuthKitMiddlewareHandler, AuthkitMiddlewareOptions } from './types.js';
 
-function toAuthKitAuth(result: AuthResult): AuthKitAuth {
-  if (!result.user) return emptyAuth();
-  return {
-    user: result.user,
-    sessionId: result.sessionId,
-    accessToken: result.accessToken,
-    organizationId: result.organizationId ?? null,
-    role: result.role ?? null,
-    roles: result.roles ?? [],
-    permissions: result.permissions ?? [],
-    impersonator: result.impersonator ?? null,
-  };
-}
-
-function emptyAuth(): AuthKitAuth {
-  return {
-    user: null,
-    sessionId: undefined,
-    accessToken: undefined,
-    organizationId: null,
-    role: null,
-    roles: [],
-    permissions: [],
-    impersonator: null,
-  };
-}
-
-function isProtected(pathname: string, routes?: ProtectedRoutes): boolean {
-  if (!routes) return false;
-  if (typeof routes === 'function') return routes(pathname);
-  return routes.some((route) =>
-    typeof route === 'string'
-      ? pathname === route || pathname.startsWith(route.endsWith('/') ? route : `${route}/`)
-      : route.test(pathname),
-  );
+// Treat a request as a browser navigation (redirect to sign-in) only when it
+// asks for HTML; everything else — fetch() from islands, curl, API clients —
+// gets a 401 instead of an HTML login page.
+function wantsHtml(request: Request): boolean {
+  return request.headers.get('accept')?.includes('text/html') ?? false;
 }
 
 /**
@@ -45,24 +16,56 @@ function isProtected(pathname: string, routes?: ProtectedRoutes): boolean {
  * populates `Astro.locals.auth`, refreshes expiring tokens, and (optionally)
  * gates protected routes.
  *
+ * Anonymous requests to a protected route are redirected to `signInPath` when
+ * they accept HTML, and receive a 401 JSON response otherwise.
+ *
+ * Pass a handler for full per-request control — it runs after `locals.auth`
+ * is populated (and after the `protectedRoutes` gate, if configured):
+ *
  * @example
  * ```ts
  * // src/middleware.ts
- * import { authkitMiddleware } from '@workos/authkit-astro';
- * export const onRequest = authkitMiddleware({ protectedRoutes: ['/dashboard'] });
+ * import { authkitMiddleware, createRouteMatcher } from '@workos/authkit-astro';
+ *
+ * const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+ *
+ * export const onRequest = authkitMiddleware((auth, context) => {
+ *   if (isAdminRoute(context.url) && !auth.has({ role: 'admin' })) {
+ *     return auth.redirectToSignIn();
+ *   }
+ * });
  * ```
  */
-export function authkitMiddleware(options: AuthkitMiddlewareOptions = {}): MiddlewareHandler {
+export function authkitMiddleware(options?: AuthkitMiddlewareOptions): MiddlewareHandler;
+export function authkitMiddleware(
+  handler: AuthKitMiddlewareHandler,
+  options?: AuthkitMiddlewareOptions,
+): MiddlewareHandler;
+export function authkitMiddleware(
+  handlerOrOptions?: AuthKitMiddlewareHandler | AuthkitMiddlewareOptions,
+  maybeOptions?: AuthkitMiddlewareOptions,
+): MiddlewareHandler {
+  const handler = typeof handlerOrOptions === 'function' ? handlerOrOptions : undefined;
+  const options = (typeof handlerOrOptions === 'function' ? maybeOptions : handlerOrOptions) ?? {};
   const { protectedRoutes, signInPath = '/login', debug = false, onError, config } = options;
 
   if (config) configureAuthKit(config);
+  setActiveSignInPath(signInPath);
 
   return async (context, next) => {
+    // Prerendered routes render at build time with no request cookies — skip
+    // session work entirely and leave a signed-out auth on locals. Components
+    // fall back to the client store on these pages.
+    if (context.isPrerendered) {
+      context.locals.auth = buildAuth(null, context, signInPath);
+      return next();
+    }
+
     try {
       const instance = getInstance();
       const { auth, refreshedSessionData } = await instance.withAuth(context.cookies);
 
-      context.locals.auth = toAuthKitAuth(auth);
+      context.locals.auth = buildAuth(auth, context, signInPath);
 
       if (debug) {
         console.log(`[authkit-astro] ${context.url.pathname} → ${auth.user ? auth.user.email : 'anonymous'}`);
@@ -73,18 +76,35 @@ export function authkitMiddleware(options: AuthkitMiddlewareOptions = {}): Middl
       if (refreshedSessionData) {
         await instance.saveSession(context.cookies, refreshedSessionData);
       }
-
-      if (!auth.user && isProtected(context.url.pathname, protectedRoutes)) {
-        const returnTo = encodeURIComponent(context.url.pathname + context.url.search);
-        return context.redirect(`${signInPath}?returnTo=${returnTo}`);
-      }
-
-      return next();
     } catch (error) {
       if (debug) console.error('[authkit-astro] middleware error:', error);
       onError?.(error as Error);
-      context.locals.auth = emptyAuth();
-      return next();
+      context.locals.auth = buildAuth(null, context, signInPath);
     }
+
+    const auth = context.locals.auth;
+
+    if (!auth.user && matchesRoute(context.url.pathname, protectedRoutes)) {
+      if (!wantsHtml(context.request)) {
+        return Response.json({ error: 'unauthorized' }, { status: 401 });
+      }
+      return auth.redirectToSignIn();
+    }
+
+    if (handler) {
+      // Memoize next() so "handler called next" and "we call next after" never
+      // double-invoke the rest of the chain.
+      let nextResult: Promise<Response> | undefined;
+      const wrappedNext: MiddlewareNext = (payload?: Parameters<MiddlewareNext>[0]) => {
+        nextResult ??= payload === undefined ? next() : next(payload);
+        return nextResult;
+      };
+
+      const result = await handler(auth, context, wrappedNext);
+      if (result instanceof Response) return result;
+      if (nextResult) return nextResult;
+    }
+
+    return next();
   };
 }

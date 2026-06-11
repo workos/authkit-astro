@@ -9,6 +9,9 @@ export const TEST_CONFIG: AuthKitConfig = {
   cookiePassword: 'a'.repeat(32),
 };
 
+/** Headers a browser navigation sends — middleware redirects (vs 401s) on these. */
+export const HTML_HEADERS = { accept: 'text/html,application/xhtml+xml' };
+
 export interface FakeCookies {
   get(name: string): { value: string } | undefined;
   set(name: string, value: string, options?: unknown): void;
@@ -43,14 +46,17 @@ export function makeContext(opts: {
   pathname?: string;
   search?: string;
   locals?: Record<string, unknown>;
+  headers?: Record<string, string>;
+  isPrerendered?: boolean;
 }): APIContext {
-  const { cookies, pathname = '/', search = '', locals = {} } = opts;
+  const { cookies, pathname = '/', search = '', locals = {}, headers, isPrerendered = false } = opts;
   const url = new URL(`http://localhost:4321${pathname}${search}`);
   return {
     cookies: cookies as unknown as AstroCookies,
     url,
     locals,
-    request: new Request(url),
+    isPrerendered,
+    request: new Request(url, { headers }),
     redirect: (location: string, status = 302) => new Response(null, { status, headers: { Location: location } }),
   } as unknown as APIContext;
 }

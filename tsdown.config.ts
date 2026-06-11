@@ -5,6 +5,8 @@ export default defineConfig({
     'index': 'src/index.ts',
     'client': 'src/client.ts',
     'shared': 'src/shared.ts',
+    'elements': 'src/elements.ts',
+    'react': 'src/react.ts',
     'internal/middleware': 'src/internal/middleware.ts',
     'internal/routes/login': 'src/internal/routes/login.ts',
     'internal/routes/signup': 'src/internal/routes/signup.ts',
@@ -22,7 +24,7 @@ export default defineConfig({
   // build time, not imported for their types, so emitting their .d.ts (which
   // would inline the ambient `astro:env/server` / `virtual:` decls) is avoided.
   dts: {
-    entry: ['src/index.ts', 'src/client.ts', 'src/shared.ts'],
+    entry: ['src/index.ts', 'src/client.ts', 'src/shared.ts', 'src/elements.ts', 'src/react.ts'],
   },
   sourcemap: true,
   clean: true,

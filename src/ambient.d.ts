@@ -1,12 +1,14 @@
 // Ambient declarations so the package's own `tsc` typecheck resolves the
 // virtual modules used by the integration-injected entrypoints. These are NOT
-// shipped in the published types (dts is emitted only for index/client/shared),
+// shipped in the published types (dts is emitted only for the public entries),
 // so they cannot clash with Astro's real `astro:env/server` types in consumers.
 
 declare module 'virtual:@workos/authkit-astro/options' {
   const options: {
     protectedRoutes: string[];
     signInPath: string;
+    afterSignOutUrl: string;
+    errorRedirect?: string;
   };
   export default options;
 }

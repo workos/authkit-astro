@@ -1,4 +1,5 @@
 import { configure, createAuthService } from '@workos/authkit-session';
+import type { WorkOS } from '@workos/authkit-session';
 import { AstroSessionStorage } from './storage.js';
 import type { AstroCookies, AuthKitConfig } from './types.js';
 
@@ -73,4 +74,18 @@ export function getInstance(): AuthKitInstance {
     instance = build();
   }
   return instance;
+}
+
+/**
+ * The configured WorkOS Node client — the full WorkOS API (User Management,
+ * Organizations, Directory Sync, …) without instantiating a second client.
+ *
+ * @example
+ * ```ts
+ * import { getWorkOS } from '@workos/authkit-astro';
+ * const org = await getWorkOS().organizations.getOrganization(orgId);
+ * ```
+ */
+export function getWorkOS(): WorkOS {
+  return getInstance().getWorkOS();
 }

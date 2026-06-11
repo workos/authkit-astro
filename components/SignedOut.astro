@@ -1,0 +1,21 @@
+---
+// Renders children only for signed-out visitors. See SignedIn.astro for the
+// request-rendered vs prerendered behaviour.
+const auth = Astro.locals?.auth;
+const prerendered = Astro.isPrerendered ?? false;
+---
+
+{
+  !prerendered ? (
+    !auth?.user && <slot />
+  ) : (
+    <>
+      <authkit-gate hidden data-when='"signed-out"'>
+        <slot />
+      </authkit-gate>
+      <script>
+        import '@workos/authkit-astro/elements';
+      </script>
+    </>
+  )
+}

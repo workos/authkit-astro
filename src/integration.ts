@@ -4,9 +4,10 @@ import { envField } from 'astro/config';
 /** Options for the `@workos/authkit-astro` Astro integration. */
 export interface AuthkitIntegrationOptions {
   /**
-   * Path prefixes that require a signed-in user (anonymous visitors are
-   * redirected to `signInPath`). Strings only here — for RegExp / predicate
-   * matching, wire `authkitMiddleware` manually instead.
+   * Routes that require a signed-in user (anonymous visitors are redirected
+   * to `signInPath`). Plain strings are path prefixes; `path-to-regexp`-style
+   * patterns (`/dashboard(.*)`, `/orgs/:slug`) match the full pathname. For
+   * RegExp / predicate matching, wire `authkitMiddleware` manually instead.
    */
   protectedRoutes?: string[];
   /** Where to redirect unauthenticated visitors (default `/login`). */
@@ -16,6 +17,13 @@ export interface AuthkitIntegrationOptions {
   signUpPath?: string;
   callbackPath?: string;
   logoutPath?: string;
+  /** Where to land after signing out (default `/`). */
+  afterSignOutUrl?: string;
+  /**
+   * On callback failure, redirect here (with `?error=` appended) instead of
+   * returning a 400 response.
+   */
+  errorRedirect?: string;
   /** Client session endpoint used by the auth store (default `/_authkit/me`). */
   sessionEndpoint?: string;
   /** Inject the login/signup/callback/logout routes (default `true`). */
@@ -53,14 +61,16 @@ export default function workos(options: AuthkitIntegrationOptions = {}): AstroIn
     signUpPath = '/signup',
     callbackPath = '/callback',
     logoutPath = '/logout',
+    afterSignOutUrl = '/',
+    errorRedirect,
     sessionEndpoint = '/_authkit/me',
     injectRoutes = true,
     injectEnvSchema = true,
     hydrateClient = true,
   } = options;
 
-  // Only serializable values cross into the injected middleware entrypoint.
-  const middlewareOptions = { protectedRoutes, signInPath };
+  // Only serializable values cross into the injected entrypoints.
+  const injectedOptions = { protectedRoutes, signInPath, afterSignOutUrl, errorRedirect };
 
   return {
     name: '@workos/authkit-astro',
@@ -74,12 +84,13 @@ export default function workos(options: AuthkitIntegrationOptions = {}): AstroIn
                 WORKOS_API_KEY: envField.string({ context: 'server', access: 'secret' }),
                 WORKOS_REDIRECT_URI: envField.string({ context: 'server', access: 'secret' }),
                 WORKOS_COOKIE_PASSWORD: envField.string({ context: 'server', access: 'secret' }),
+                WORKOS_WEBHOOK_SECRET: envField.string({ context: 'server', access: 'secret', optional: true }),
               },
             },
           });
         }
 
-        // Provide the middleware's options through a Vite virtual module.
+        // Provide the injected entrypoints' options through a Vite virtual module.
         updateConfig({
           vite: {
             plugins: [
@@ -91,7 +102,7 @@ export default function workos(options: AuthkitIntegrationOptions = {}): AstroIn
                 },
                 load(id: string) {
                   if (id === RESOLVED_VIRTUAL_ID) {
-                    return `export default ${JSON.stringify(middlewareOptions)};`;
+                    return `export default ${JSON.stringify(injectedOptions)};`;
                   }
                   return undefined;
                 },
@@ -134,13 +145,38 @@ export default function workos(options: AuthkitIntegrationOptions = {}): AstroIn
             entrypoint: '@workos/authkit-astro/internal/routes/me',
             prerender: false,
           });
+          // Hydrate on load, and re-hydrate after View Transitions navigations
+          // (`astro:page-load` also fires on the initial load — skip that one).
           injectScript(
             'page',
-            `import { hydrateAuth } from '@workos/authkit-astro/client'; hydrateAuth(${JSON.stringify(sessionEndpoint)});`,
+            `import { hydrateAuth } from '@workos/authkit-astro/client';
+const endpoint = ${JSON.stringify(sessionEndpoint)};
+let initialLoad = true;
+document.addEventListener('astro:page-load', () => {
+  if (initialLoad) { initialLoad = false; return; }
+  hydrateAuth(endpoint, { refresh: true });
+});
+hydrateAuth(endpoint);`,
           );
         }
 
         logger.info('WorkOS AuthKit wired (middleware + routes' + (hydrateClient ? ' + client store' : '') + ')');
+      },
+
+      'astro:config:done': ({ injectTypes }) => {
+        // Guarantee `Astro.locals.auth` is typed even when the app never
+        // imports the package from its own TS program.
+        injectTypes({
+          filename: 'types.d.ts',
+          content: [
+            'declare namespace App {',
+            '  interface Locals {',
+            "    auth: import('@workos/authkit-astro').AuthKitAuth;",
+            '  }',
+            '}',
+            '',
+          ].join('\n'),
+        });
       },
     },
   };

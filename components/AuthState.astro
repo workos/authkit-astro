@@ -5,13 +5,25 @@ import { toClientAuth } from '@workos/authkit-astro/internal/shared';
 // (`@workos/authkit-astro/client`) hydrates synchronously — no round-trip.
 // Drop this in your layout's <head>:
 //
-//   import AuthState from '@workos/authkit-astro/AuthState.astro';
+//   import { AuthState } from '@workos/authkit-astro/components';
 //   <head>...<AuthState /></head>
 //
 // Tokens are never included (see toClientAuth). The `<` escape prevents a
 // `</script>` breakout if user data contains markup.
-const state = toClientAuth(Astro.locals.auth);
-const json = JSON.stringify(state).replace(/</g, '\\u003c');
+//
+// On prerendered pages there is no request-time session, so no snapshot is
+// emitted — a baked-in build-time snapshot would wrongly pin the store to
+// "signed out". The store falls back to fetching the session endpoint.
+const prerendered = Astro.isPrerendered ?? false;
+const state = prerendered ? null : toClientAuth(Astro.locals.auth);
+const json = state ? JSON.stringify(state).replace(/</g, '\\u003c') : null;
 ---
 
-<script is:inline set:html={`window.__AUTHKIT_STATE__ = ${json};`} />
+{
+  json && (
+    <>
+      {/* data-astro-rerun keeps the snapshot fresh across View Transitions swaps. */}
+      <script is:inline data-astro-rerun set:html={`window.__AUTHKIT_STATE__ = ${json};`} />
+    </>
+  )
+}

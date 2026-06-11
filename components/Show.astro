@@ -1,0 +1,57 @@
+---
+import { checkAuthCondition } from '@workos/authkit-astro/internal/shared';
+import type { AuthCondition } from '@workos/authkit-astro/internal/shared';
+import type { AuthKitAuth } from '@workos/authkit-astro';
+
+// Conditionally render children by auth state, with an optional named
+// `fallback` slot for the other branch:
+//
+//   <Show when={{ permission: 'invoices:create' }}>
+//     <CreateInvoice />
+//     <p slot="fallback">Ask an admin for access.</p>
+//   </Show>
+//
+// On request-rendered pages the check runs on the server, so the unmatched
+// branch is never sent to the browser. On prerendered pages the decision is
+// deferred to the client store via <authkit-gate> (predicate `when`s can't be
+// serialized — those render the fallback there).
+
+interface Props {
+  when: AuthCondition | ((auth: AuthKitAuth) => boolean);
+}
+
+const { when } = Astro.props;
+const auth = Astro.locals?.auth;
+const prerendered = Astro.isPrerendered ?? false;
+const isPredicate = typeof when === 'function';
+const hasFallback = Astro.slots.has('fallback');
+
+const ssrMatches =
+  !prerendered && (isPredicate ? (auth ? when(auth) : false) : checkAuthCondition(auth ?? { user: null }, when));
+---
+
+{
+  !prerendered ? (
+    ssrMatches ? (
+      <slot />
+    ) : (
+      <slot name="fallback" />
+    )
+  ) : isPredicate ? (
+    <slot name="fallback" />
+  ) : (
+    <>
+      <authkit-gate hidden data-when={JSON.stringify(when)}>
+        <slot />
+      </authkit-gate>
+      {hasFallback && (
+        <authkit-gate hidden data-when={JSON.stringify({ not: when })}>
+          <slot name="fallback" />
+        </authkit-gate>
+      )}
+      <script>
+        import '@workos/authkit-astro/elements';
+      </script>
+    </>
+  )
+}

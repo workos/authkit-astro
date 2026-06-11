@@ -1,0 +1,22 @@
+---
+// Renders children only for signed-in users. On request-rendered pages the
+// check is server-side (signed-out visitors never receive the markup); on
+// prerendered pages it falls back to the client store via <authkit-gate>.
+const auth = Astro.locals?.auth;
+const prerendered = Astro.isPrerendered ?? false;
+---
+
+{
+  !prerendered ? (
+    auth?.user && <slot />
+  ) : (
+    <>
+      <authkit-gate hidden data-when='"signed-in"'>
+        <slot />
+      </authkit-gate>
+      <script>
+        import '@workos/authkit-astro/elements';
+      </script>
+    </>
+  )
+}

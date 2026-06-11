@@ -1,0 +1,19 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+// Unstyled link to the sign-in route. Slot content replaces the label:
+//
+//   <SignInButton returnTo="/dashboard" class="btn">Log in</SignInButton>
+
+interface Props extends HTMLAttributes<'a'> {
+  /** Path of the login route (default `/login`, the integration's default). */
+  path?: string;
+  /** Where to land after authentication. */
+  returnTo?: string;
+}
+
+const { path = '/login', returnTo, ...rest } = Astro.props;
+const href = returnTo ? `${path}?returnTo=${encodeURIComponent(returnTo)}` : path;
+---
+
+<a {href} {...rest}><slot>Sign in</slot></a>

@@ -1,0 +1,48 @@
+---
+// A fixed banner shown only while the session is impersonated (via the WorkOS
+// dashboard), so operators never forget whose account they're acting in.
+// Renders nothing otherwise. Slot content replaces the default banner body.
+
+interface Props {
+  /** Path of the logout route (default `/logout`). */
+  logoutPath?: string;
+}
+
+const { logoutPath = '/logout' } = Astro.props;
+const auth = Astro.locals?.auth;
+---
+
+{
+  auth?.impersonator && (
+    <div class="authkit-impersonation" role="status">
+      <slot>
+        <span>
+          Impersonating <strong>{auth.user?.email}</strong> (as {auth.impersonator.email})
+        </span>
+        <a href={logoutPath}>Stop</a>
+      </slot>
+    </div>
+  )
+}
+
+<style>
+  .authkit-impersonation {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    background: #1a1a1a;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.25);
+  }
+  .authkit-impersonation a {
+    color: #fca5a5;
+  }
+</style>
