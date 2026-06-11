@@ -13,7 +13,7 @@
     "@astrojs/node": "^9.0.0",
     "@astrojs/react": "^4.0.0",
     "@nanostores/react": "^1.0.0",
-    "@workos-inc/node": "^9.2.0",
+    "@workos-inc/node": "^10.0.0",
     "@workos/authkit-astro": "file:..",
     "astro": "^5.0.0",
     "nanostores": "^1.0.0",

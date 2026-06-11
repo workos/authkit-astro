@@ -14,10 +14,14 @@ secret schema. No middleware or route files in `src/`.
 
 The app then shows:
 
-- `Astro.locals.auth` in pages/components (server, typed automatically)
-- a **React island** (`src/components/UserBadge.tsx`, `client:load`) reading the
-  session from the **client store** (`@workos/authkit-astro/client`) via
-  `@nanostores/react`, hydrated by `<AuthState />` in the layout `<head>`
+- `Astro.locals.auth` in pages/components (server, typed automatically), with
+  `auth.redirectToSignIn()` guarding `/dashboard`
+- the **auth components** (`SignedIn` / `SignedOut` / buttons in the header,
+  an `Impersonation` banner in the layout)
+- a **prerendered page** (`/about`) where the components resolve client-side
+- a **React island** (`src/components/UserBadge.tsx`, `client:load`) reading
+  the session via the `useUser()` hook from `@workos/authkit-astro/react`,
+  hydrated by `<AuthState />` in the layout `<head>`
 
 ## Run
 

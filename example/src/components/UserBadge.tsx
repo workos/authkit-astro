@@ -1,13 +1,13 @@
-import { useStore } from '@nanostores/react';
-import { $signedIn, $user } from '@workos/authkit-astro/client';
+import { useUser } from '@workos/authkit-astro/react';
 
 // A real React island. It reads the WorkOS session from the client store via
-// @nanostores/react — the same `$user` atom any framework island can subscribe
-// to. Server-rendered as "signed out" (no `window` on the server), then
-// reconciled on hydration from the snapshot injected by <AuthState />.
+// the SDK's zero-dependency React hooks (`@nanostores/react` over the raw
+// `$user` atom works just as well). Server-rendered as "signed out" (no
+// `window` on the server), then reconciled on hydration from the snapshot
+// injected by <AuthState />.
 export default function UserBadge() {
-  const user = useStore($user);
-  const signedIn = useStore($signedIn);
+  const { user, isLoaded } = useUser();
 
-  return <span>{signedIn && user ? `⚛️ ${user.email} (React island)` : '⚛️ signed out (React island)'}</span>;
+  if (!isLoaded) return <span>⚛️ … (React island)</span>;
+  return <span>{user ? `⚛️ ${user.email} (React island)` : '⚛️ signed out (React island)'}</span>;
 }

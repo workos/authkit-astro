@@ -1,0 +1,19 @@
+---
+// A prerendered page: no request-time session here, so <SignedIn>/<SignedOut>
+// defer to the client store (<authkit-gate>) instead of the server check.
+import { SignedIn, SignedOut } from '@workos/authkit-astro/components';
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = true;
+---
+
+<Layout title="About">
+  <h1>About</h1>
+  <p>This page is prerendered at build time — auth state is resolved client-side.</p>
+  <SignedIn>
+    <p>You're signed in. 🎉</p>
+  </SignedIn>
+  <SignedOut>
+    <p>You're signed out. <a href="/login">Sign in</a></p>
+  </SignedOut>
+</Layout>

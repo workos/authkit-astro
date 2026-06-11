@@ -1,5 +1,5 @@
 ---
-import AuthState from '@workos/authkit-astro/AuthState.astro';
+import { AuthState, Impersonation } from '@workos/authkit-astro/components';
 import AuthStatus from '../components/AuthStatus.astro';
 
 interface Props {
@@ -67,5 +67,7 @@ const { title = 'WorkOS AuthKit + Astro' } = Astro.props;
     <main>
       <slot />
     </main>
+    {/* Shown only while the session is impersonated from the WorkOS dashboard. */}
+    <Impersonation />
   </body>
 </html>

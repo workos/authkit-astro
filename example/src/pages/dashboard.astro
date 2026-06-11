@@ -2,10 +2,11 @@
 import Layout from '../layouts/Layout.astro';
 
 // Protected by the middleware (protectedRoutes: ['/dashboard']); the guard here
-// just narrows the type for `auth.user`.
+// narrows the type for `auth.user` — and keeps working if the route is ever
+// removed from protectedRoutes.
 const { auth } = Astro.locals;
 if (!auth.user) {
-  return Astro.redirect('/login?returnTo=/dashboard');
+  return auth.redirectToSignIn();
 }
 ---
 
