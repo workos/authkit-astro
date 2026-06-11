@@ -38,8 +38,8 @@
     "example"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -69,7 +69,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@workos-inc/node": "^8.0.0 || ^9.0.0",
+    "@workos-inc/node": "^8.0.0 || ^9.0.0 || ^10.0.0",
     "astro": "^4.0.0 || ^5.0.0"
   },
   "engines": {
@@ -86,7 +86,7 @@
     "astro": "^6.4.6",
     "oxfmt": "^0.54.0",
     "oxlint": "^1.69.0",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.22.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"
   }

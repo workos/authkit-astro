@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 
 export default defineConfig({
   entry: {
@@ -12,22 +12,24 @@ export default defineConfig({
     'internal/routes/logout': 'src/internal/routes/logout.ts',
     'internal/routes/me': 'src/internal/routes/me.ts',
   },
-  // ESM-only, like the rest of the Astro ecosystem
-  format: ['esm'],
+  // ESM-only, like the rest of the Astro ecosystem.
+  format: 'esm',
+  platform: 'node',
+  // Emit `.js`/`.d.ts` (honouring `"type": "module"`) rather than tsdown's
+  // node-default `.mjs`/`.d.mts`, so the paths match the package.json exports.
+  fixedExtension: false,
   // Public type surface only — internal entrypoints are consumed by Astro at
   // build time, not imported for their types, so emitting their .d.ts (which
   // would inline the ambient `astro:env/server` / `virtual:` decls) is avoided.
   dts: {
-    entry: {
-      index: 'src/index.ts',
-      client: 'src/client.ts',
-      shared: 'src/shared.ts',
-    },
+    entry: ['src/index.ts', 'src/client.ts', 'src/shared.ts'],
   },
-  splitting: false,
   sourcemap: true,
   clean: true,
-  // Tree-shaking is delegated to the consumer's bundler via `"sideEffects": false`
-  // in package.json.
-  external: ['astro', 'astro:env/server', 'astro:middleware', /^virtual:/],
+  deps: {
+    // Virtual / Astro-provided modules are resolved by the consuming app's
+    // build, not here. (`astro` and the WorkOS packages are auto-externalized
+    // as dependencies/peerDependencies.)
+    neverBundle: ['astro:env/server', 'astro:middleware', /^virtual:/],
+  },
 });
