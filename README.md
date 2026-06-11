@@ -21,14 +21,14 @@ it by hand:
 
 ```js
 // astro.config.mjs
-import node from "@astrojs/node";
-import workos from "@workos/authkit-astro";
-import { defineConfig } from "astro/config";
+import node from '@astrojs/node';
+import workos from '@workos/authkit-astro';
+import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  output: "server",
-  adapter: node({ mode: "standalone" }),
-  integrations: [workos({ protectedRoutes: ["/dashboard"] })],
+  output: 'server',
+  adapter: node({ mode: 'standalone' }),
+  integrations: [workos({ protectedRoutes: ['/dashboard'] })],
 });
 ```
 
@@ -73,15 +73,15 @@ const { auth } = Astro.locals;
 
 ```ts
 workos({
-  protectedRoutes: ["/dashboard(.*)"], // prefixes or path-to-regexp-style patterns
-  signInPath: "/login", // where anonymous visitors are sent
-  loginPath: "/login", // patterns for the injected routes
-  signUpPath: "/signup",
-  callbackPath: "/callback",
-  logoutPath: "/logout",
-  afterSignOutUrl: "/", // where /logout lands (also accepts ?returnTo=)
-  errorRedirect: "/login", // redirect (with ?error=) on callback failure instead of a 400
-  sessionEndpoint: "/_authkit/me", // client store hydration endpoint
+  protectedRoutes: ['/dashboard(.*)'], // prefixes or path-to-regexp-style patterns
+  signInPath: '/login', // where anonymous visitors are sent
+  loginPath: '/login', // patterns for the injected routes
+  signUpPath: '/signup',
+  callbackPath: '/callback',
+  logoutPath: '/logout',
+  afterSignOutUrl: '/', // where /logout lands (also accepts ?returnTo=)
+  errorRedirect: '/login', // redirect (with ?error=) on callback failure instead of a 400
+  sessionEndpoint: '/_authkit/me', // client store hydration endpoint
   injectRoutes: true,
   injectEnvSchema: true, // declare WORKOS_* in astro:env
   hydrateClient: true, // session endpoint + client bootstrap script
@@ -112,7 +112,7 @@ auth.entitlements; // string[]
 auth.featureFlags; // string[]
 auth.impersonator; // Impersonator | null
 
-auth.has({ role: "admin" }); // boolean — also permission / entitlement / featureFlag; ANDs checks
+auth.has({ role: 'admin' }); // boolean — also permission / entitlement / featureFlag; ANDs checks
 auth.redirectToSignIn(); // Response — redirect to sign-in, returnTo = current URL
 ```
 
@@ -190,12 +190,12 @@ Then read it in an island:
 
 ```tsx
 // React island
-import { useStore } from "@nanostores/react";
-import { $signedIn, $user } from "@workos/authkit-astro/client";
+import { useStore } from '@nanostores/react';
+import { $signedIn, $user } from '@workos/authkit-astro/client';
 
 export function UserBadge() {
   const user = useStore($user);
-  return <span>{user ? user.email : "Signed out"}</span>;
+  return <span>{user ? user.email : 'Signed out'}</span>;
 }
 ```
 
@@ -207,12 +207,12 @@ yet" from "signed out" — gate loading UI on it. Use the matching
 for React, the zero-dependency hooks:
 
 ```tsx
-import { useAuth, useUser } from "@workos/authkit-astro/react";
+import { useAuth, useUser } from '@workos/authkit-astro/react';
 
 export function UserBadge() {
   const { user, isLoaded } = useUser();
   if (!isLoaded) return null;
-  return <span>{user ? user.email : "Signed out"}</span>;
+  return <span>{user ? user.email : 'Signed out'}</span>;
 }
 ```
 
@@ -223,17 +223,8 @@ integration)? The building blocks are exported directly.
 
 ```ts
 // src/middleware.ts
-import {
-  authkitMiddleware,
-  configureAuthKit,
-  createRouteMatcher,
-} from "@workos/authkit-astro";
-import {
-  WORKOS_API_KEY,
-  WORKOS_CLIENT_ID,
-  WORKOS_COOKIE_PASSWORD,
-  WORKOS_REDIRECT_URI,
-} from "astro:env/server";
+import { authkitMiddleware, configureAuthKit, createRouteMatcher } from '@workos/authkit-astro';
+import { WORKOS_API_KEY, WORKOS_CLIENT_ID, WORKOS_COOKIE_PASSWORD, WORKOS_REDIRECT_URI } from 'astro:env/server';
 
 configureAuthKit({
   clientId: WORKOS_CLIENT_ID,
@@ -244,17 +235,17 @@ configureAuthKit({
 
 // Options form — string prefix, pattern, RegExp, or (pathname) => boolean:
 export const onRequest = authkitMiddleware({
-  protectedRoutes: ["/dashboard(.*)", /^\/admin/],
+  protectedRoutes: ['/dashboard(.*)', /^\/admin/],
 });
 ```
 
 Or take full per-request control with the handler form:
 
 ```ts
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
 export const onRequest = authkitMiddleware((auth, context) => {
-  if (isAdminRoute(context.url) && !auth.has({ role: "admin" })) {
+  if (isAdminRoute(context.url) && !auth.has({ role: 'admin' })) {
     return auth.redirectToSignIn();
   }
 });
@@ -262,16 +253,15 @@ export const onRequest = authkitMiddleware((auth, context) => {
 
 ```ts
 // src/pages/login.ts   (and signup.ts, logout.ts)
-export { handleSignIn as GET } from "@workos/authkit-astro";
+export { handleSignIn as GET } from '@workos/authkit-astro';
 ```
 
 ```ts
 // src/pages/callback.ts — drop-in, or customized:
-import { createCallbackHandler } from "@workos/authkit-astro";
+import { createCallbackHandler } from '@workos/authkit-astro';
 export const GET = createCallbackHandler({
-  errorRedirect: "/login",
-  onSuccess: (_ctx, { authResponse }) =>
-    console.log("signed in", authResponse.user.id),
+  errorRedirect: '/login',
+  onSuccess: (_ctx, { authResponse }) => console.log('signed in', authResponse.user.id),
 });
 ```
 
@@ -282,7 +272,7 @@ the org and persists the new session cookie):
 
 ```ts
 // src/pages/api/switch-org.ts
-import { switchToOrganization } from "@workos/authkit-astro";
+import { switchToOrganization } from '@workos/authkit-astro';
 
 export const POST: APIRoute = async (context) => {
   const { organizationId } = await context.request.json();
@@ -299,11 +289,9 @@ export const POST: APIRoute = async (context) => {
 The full WorkOS Node client, sharing the SDK's configuration:
 
 ```ts
-import { getWorkOS } from "@workos/authkit-astro";
+import { getWorkOS } from '@workos/authkit-astro';
 
-const org = await getWorkOS().organizations.getOrganization(
-  auth.organizationId,
-);
+const org = await getWorkOS().organizations.getOrganization(auth.organizationId);
 ```
 
 ## Webhooks
@@ -312,11 +300,11 @@ Verify the `workos-signature` header and get a parsed event back:
 
 ```ts
 // src/pages/api/webhooks.ts
-import { verifyWebhook } from "@workos/authkit-astro";
+import { verifyWebhook } from '@workos/authkit-astro';
 
 export const POST: APIRoute = async (context) => {
   const event = await verifyWebhook(context); // secret from WORKOS_WEBHOOK_SECRET
-  if (event.event === "user.created") {
+  if (event.event === 'user.created') {
     // ...
   }
   return new Response(null, { status: 200 });
