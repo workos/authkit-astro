@@ -8,3 +8,7 @@ export { default as SignInButton } from './SignInButton.astro';
 export { default as SignUpButton } from './SignUpButton.astro';
 export { default as SignOutButton } from './SignOutButton.astro';
 export { default as Impersonation } from './Impersonation.astro';
+export { default as UserButton } from './UserButton.astro';
+export { default as UserProfile } from './UserProfile.astro';
+export { default as OrganizationSwitcher } from './OrganizationSwitcher.astro';
+export { default as OrganizationProfile } from './OrganizationProfile.astro';

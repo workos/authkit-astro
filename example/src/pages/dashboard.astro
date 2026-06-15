@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { OrganizationProfile, UserProfile } from '@workos/authkit-astro/components';
 
 // Protected by the middleware (protectedRoutes: ['/dashboard']); the guard here
 // narrows the type for `auth.user` — and keeps working if the route is ever
@@ -15,9 +16,11 @@ if (!auth.user) {
   <p>This page requires authentication.</p>
 
   <h2>User</h2>
+  <UserProfile showId />
   <pre>{JSON.stringify(auth.user, null, 2)}</pre>
 
   <h2>Session</h2>
+  <OrganizationProfile />
   <ul>
     <li><strong>Session ID:</strong> {auth.sessionId}</li>
     <li><strong>Organization:</strong> {auth.organizationId ?? '—'}</li>

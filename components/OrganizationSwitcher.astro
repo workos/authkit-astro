@@ -1,0 +1,75 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+export interface OrganizationOption {
+  id: string;
+  name?: string;
+  slug?: string;
+  disabled?: boolean;
+}
+
+interface Props extends HTMLAttributes<'form'> {
+  /** Organizations the signed-in user can switch to. */
+  organizations: OrganizationOption[];
+  /** Endpoint that switches the session's active organization. */
+  action?: string;
+  /** Form method for the switch endpoint. */
+  method?: 'get' | 'post';
+  /** Form field name sent with the organization id. */
+  name?: string;
+  /** Visible label for the select. */
+  label?: string;
+}
+
+const {
+  organizations,
+  action = '/api/switch-org',
+  method = 'post',
+  name = 'organizationId',
+  label = 'Organization',
+  class: className,
+  ...rest
+} = Astro.props;
+const auth = Astro.locals?.auth;
+const activeOrganizationId = auth?.organizationId;
+---
+
+{
+  auth?.user && organizations.length > 0 && (
+    <form class:list={['authkit-organization-switcher', className]} method={method} action={action} {...rest}>
+      <label>
+        <span>{label}</span>
+        <select name={name}>
+          {organizations.map((organization) => (
+            <option
+              value={organization.id}
+              selected={organization.id === activeOrganizationId}
+              disabled={organization.disabled}
+            >
+              {organization.name ?? organization.slug ?? organization.id}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button type="submit"><slot>Switch</slot></button>
+    </form>
+  )
+}
+
+<style>
+  .authkit-organization-switcher {
+    display: inline-flex;
+    align-items: end;
+    gap: 0.5rem;
+  }
+
+  .authkit-organization-switcher label {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .authkit-organization-switcher span {
+    color: #6b7280;
+    font-size: 0.75rem;
+  }
+</style>

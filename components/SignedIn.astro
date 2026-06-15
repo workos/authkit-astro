@@ -2,6 +2,15 @@
 // Renders children only for signed-in users. On request-rendered pages the
 // check is server-side (signed-out visitors never receive the markup); on
 // prerendered pages it falls back to the client store via <authkit-gate>.
+interface Props {
+  /**
+   * On prerendered pages, render nothing instead of shipping signed-in-only
+   * children in the static HTML for the client-side gate to reveal later.
+   */
+  serverOnly?: boolean;
+}
+
+const { serverOnly = false } = Astro.props;
 const auth = Astro.locals?.auth;
 const prerendered = Astro.isPrerendered ?? false;
 ---
@@ -9,6 +18,8 @@ const prerendered = Astro.isPrerendered ?? false;
 {
   !prerendered ? (
     auth?.user && <slot />
+  ) : serverOnly ? (
+    null
   ) : (
     <>
       <authkit-gate hidden data-when='"signed-in"'>

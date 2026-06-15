@@ -2,17 +2,12 @@
 // Header auth widget built from the SDK's control + button components — the
 // SignedIn/SignedOut branches are decided server-side, so the other branch
 // never reaches the browser.
-import { SignedIn, SignedOut, SignInButton, SignOutButton, SignUpButton } from '@workos/authkit-astro/components';
-
-const { auth } = Astro.locals;
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from '@workos/authkit-astro/components';
 ---
 
 <div class="auth-status">
   <SignedIn>
-    <span>
-      Signed in as <strong>{auth.user?.email}</strong>
-    </span>
-    <SignOutButton />
+    <UserButton />
   </SignedIn>
   <SignedOut>
     <SignInButton />

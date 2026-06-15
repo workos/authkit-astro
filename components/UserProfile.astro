@@ -1,0 +1,100 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'section'> {
+  /** Optional account/profile URL. */
+  profilePath?: string;
+  /** Path of the logout route (default `/logout`). */
+  signOutPath?: string;
+  /** Show the WorkOS user id. */
+  showId?: boolean;
+}
+
+const { profilePath, signOutPath = '/logout', showId = false, class: className, ...rest } = Astro.props;
+const auth = Astro.locals?.auth;
+const user = auth?.user;
+
+const displayName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email;
+---
+
+{
+  user && (
+    <section class:list={['authkit-user-profile', className]} {...rest}>
+      <header>
+        {user.profilePictureUrl && <img src={user.profilePictureUrl} alt="" />}
+        <div>
+          <h2>{displayName}</h2>
+          <p>{user.email}</p>
+        </div>
+      </header>
+      <dl>
+        {showId && (
+          <>
+            <dt>User ID</dt>
+            <dd>{user.id}</dd>
+          </>
+        )}
+        <dt>Email verified</dt>
+        <dd>{user.emailVerified ? 'Yes' : 'No'}</dd>
+        {user.lastSignInAt && (
+          <>
+            <dt>Last sign-in</dt>
+            <dd>{user.lastSignInAt}</dd>
+          </>
+        )}
+      </dl>
+      <nav>
+        {profilePath && <a href={profilePath}>Profile</a>}
+        <a href={signOutPath}>Sign out</a>
+      </nav>
+    </section>
+  )
+}
+
+<style>
+  .authkit-user-profile {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .authkit-user-profile header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .authkit-user-profile img {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    object-fit: cover;
+  }
+
+  .authkit-user-profile h2,
+  .authkit-user-profile p {
+    margin: 0;
+  }
+
+  .authkit-user-profile dl {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.5rem 1rem;
+    margin: 0;
+  }
+
+  .authkit-user-profile dt {
+    color: #6b7280;
+  }
+
+  .authkit-user-profile dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .authkit-user-profile nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+</style>

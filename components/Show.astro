@@ -18,9 +18,14 @@ import type { AuthKitAuth } from '@workos/authkit-astro';
 
 interface Props {
   when: AuthCondition | ((auth: AuthKitAuth) => boolean);
+  /**
+   * On prerendered pages, render only the fallback instead of shipping gated
+   * children in the static HTML for the client-side gate to reveal later.
+   */
+  serverOnly?: boolean;
 }
 
-const { when } = Astro.props;
+const { when, serverOnly = false } = Astro.props;
 const auth = Astro.locals?.auth;
 const prerendered = Astro.isPrerendered ?? false;
 const isPredicate = typeof when === 'function';
@@ -37,6 +42,8 @@ const ssrMatches =
     ) : (
       <slot name="fallback" />
     )
+  ) : serverOnly ? (
+    <slot name="fallback" />
   ) : isPredicate ? (
     <slot name="fallback" />
   ) : (

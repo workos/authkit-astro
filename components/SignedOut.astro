@@ -1,6 +1,15 @@
 ---
 // Renders children only for signed-out visitors. See SignedIn.astro for the
 // request-rendered vs prerendered behaviour.
+interface Props {
+  /**
+   * On prerendered pages, render nothing instead of making the signed-out
+   * branch a client-side decision.
+   */
+  serverOnly?: boolean;
+}
+
+const { serverOnly = false } = Astro.props;
 const auth = Astro.locals?.auth;
 const prerendered = Astro.isPrerendered ?? false;
 ---
@@ -8,6 +17,8 @@ const prerendered = Astro.isPrerendered ?? false;
 {
   !prerendered ? (
     !auth?.user && <slot />
+  ) : serverOnly ? (
+    null
   ) : (
     <>
       <authkit-gate hidden data-when='"signed-out"'>

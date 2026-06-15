@@ -1,0 +1,78 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'section'> {
+  /** Human-readable active organization name, when the app has one available. */
+  name?: string;
+  /** Show the WorkOS organization id. */
+  showId?: boolean;
+  /** Show permission names for the active organization. */
+  showPermissions?: boolean;
+}
+
+const { name, showId = true, showPermissions = true, class: className, ...rest } = Astro.props;
+const auth = Astro.locals?.auth;
+const hasOrganization = auth?.user && (auth.organizationId || name || auth.role || auth.roles.length > 0);
+---
+
+{
+  hasOrganization && (
+    <section class:list={['authkit-organization-profile', className]} {...rest}>
+      <h2>{name ?? auth.organizationId ?? 'Organization'}</h2>
+      <dl>
+        {showId && auth.organizationId && (
+          <>
+            <dt>Organization ID</dt>
+            <dd>{auth.organizationId}</dd>
+          </>
+        )}
+        {auth.role && (
+          <>
+            <dt>Role</dt>
+            <dd>{auth.role}</dd>
+          </>
+        )}
+        {auth.roles.length > 0 && (
+          <>
+            <dt>Roles</dt>
+            <dd>{auth.roles.join(', ')}</dd>
+          </>
+        )}
+        {showPermissions && auth.permissions.length > 0 && (
+          <>
+            <dt>Permissions</dt>
+            <dd>{auth.permissions.join(', ')}</dd>
+          </>
+        )}
+      </dl>
+    </section>
+  )
+}
+
+<style>
+  .authkit-organization-profile {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .authkit-organization-profile h2 {
+    margin: 0;
+  }
+
+  .authkit-organization-profile dl {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.5rem 1rem;
+    margin: 0;
+  }
+
+  .authkit-organization-profile dt {
+    color: #6b7280;
+  }
+
+  .authkit-organization-profile dd {
+    margin: 0;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+</style>

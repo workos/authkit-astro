@@ -1,0 +1,129 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'details'> {
+  /** Optional account/profile URL. When omitted, only the sign-out action is shown. */
+  profilePath?: string;
+  /** Path of the logout route (default `/logout`). */
+  signOutPath?: string;
+  /** Where to land after signing out. */
+  returnTo?: string;
+  /** Show the user's display name or email next to the avatar. */
+  showName?: boolean;
+}
+
+const {
+  profilePath,
+  signOutPath = '/logout',
+  returnTo,
+  showName = true,
+  class: className,
+  ...rest
+} = Astro.props;
+const auth = Astro.locals?.auth;
+const user = auth?.user;
+const hasMenuSlot = Astro.slots.has('menu');
+
+const displayName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email;
+const initials =
+  displayName
+    ?.split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('') || '?';
+const signOutHref = returnTo ? `${signOutPath}?returnTo=${encodeURIComponent(returnTo)}` : signOutPath;
+---
+
+{
+  user && (
+    <details class:list={['authkit-user-button', className]} {...rest}>
+      <summary aria-label="Account">
+        {user.profilePictureUrl ? <img src={user.profilePictureUrl} alt="" /> : <span>{initials}</span>}
+        {showName && <strong>{displayName}</strong>}
+      </summary>
+      <div class="authkit-user-button-menu">
+        {hasMenuSlot ? (
+          <slot name="menu" />
+        ) : (
+          <>
+            <p>{user.email}</p>
+            {profilePath && <a href={profilePath}>Profile</a>}
+            <a href={signOutHref}>Sign out</a>
+          </>
+        )}
+      </div>
+    </details>
+  )
+}
+
+<style>
+  .authkit-user-button {
+    position: relative;
+    display: inline-block;
+  }
+
+  .authkit-user-button summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .authkit-user-button summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .authkit-user-button img,
+  .authkit-user-button summary span {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 9999px;
+  }
+
+  .authkit-user-button img {
+    object-fit: cover;
+  }
+
+  .authkit-user-button summary span {
+    display: inline-grid;
+    place-items: center;
+    background: #1f2937;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .authkit-user-button strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .authkit-user-button-menu {
+    position: absolute;
+    right: 0;
+    z-index: 20;
+    min-width: 12rem;
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  }
+
+  .authkit-user-button-menu p,
+  .authkit-user-button-menu a {
+    display: block;
+    margin: 0;
+    padding: 0.5rem;
+    color: #111827;
+    font-size: 0.875rem;
+    text-decoration: none;
+  }
+
+  .authkit-user-button-menu p {
+    color: #6b7280;
+  }
+</style>
