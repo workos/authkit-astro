@@ -73,7 +73,7 @@ const { auth } = Astro.locals;
 
 ```ts
 workos({
-  protectedRoutes: ['/dashboard(.*)'], // prefixes or path-to-regexp-style patterns
+  protectedRoutes: ['/dashboard(.*)'], // prefixes or path-to-regexp 6.x patterns
   signInPath: '/login', // where anonymous visitors are sent
   loginPath: '/login', // patterns for the injected routes
   signUpPath: '/signup',
@@ -89,10 +89,12 @@ workos({
 ```
 
 `protectedRoutes` accepts plain prefixes (`/dashboard` also matches
-`/dashboard/...`) and `path-to-regexp`-style patterns (`/dashboard(.*)`,
-`/orgs/:slug`). Anonymous browser navigations are redirected to `signInPath`;
-non-HTML requests (e.g. `fetch()` from an island) get a `401` JSON response
-instead.
+`/dashboard/...`) and `path-to-regexp` 6.x patterns (`/dashboard(.*)`,
+`/orgs/:slug`, `/orgs/:slug?`,
+`/files/:path*`, `/users/:id(\\d+)`). Plain prefixes match nested paths;
+patterns match the full pathname. Anonymous browser navigations are redirected
+to `signInPath`; non-HTML requests (e.g. `fetch()` from an island) get a `401`
+JSON response instead.
 
 ## `Astro.locals.auth`
 
@@ -142,11 +144,15 @@ import {
   SignUpButton,
   SignOutButton,
   Impersonation, // fixed banner while the session is impersonated
+  UserButton, // account menu built from Astro.locals.auth.user
+  UserProfile, // server-rendered user summary
+  OrganizationSwitcher, // form for posting an active org switch
+  OrganizationProfile, // active organization summary
 } from '@workos/authkit-astro/components';
 ---
 
 <SignedIn>
-  Welcome back! <SignOutButton class="btn" />
+  Welcome back! <UserButton profilePath="/account" />
 </SignedIn>
 <SignedOut>
   <SignInButton returnTo="/dashboard">Log in</SignInButton>
@@ -162,7 +168,35 @@ import {
 role/permission/entitlement/featureFlag checks (ANDed), or a predicate
 `(auth) => boolean` (server-rendered pages only). On prerendered pages the
 components defer to the client store via a tiny `<authkit-gate>` custom
-element instead.
+element instead. Add `serverOnly` to `<SignedIn>`, `<SignedOut>`, or `<Show>`
+when prerendered pages must not include gated children in their static HTML:
+
+```astro
+<SignedIn serverOnly>
+  <SecretAccountLink />
+</SignedIn>
+
+<Show when={{ permission: 'billing:manage' }} serverOnly>
+  <BillingAdminPanel />
+  <span slot="fallback">Not available.</span>
+</Show>
+```
+
+The user and organization components are intentionally data-driven. `UserButton`
+and `UserProfile` render from `Astro.locals.auth.user`. `OrganizationProfile`
+renders the active organization id / role / permissions already present in the
+session. `OrganizationSwitcher` needs the app to pass the organizations the
+user can switch to, and posts the selected id to an endpoint you own:
+
+```astro
+<OrganizationSwitcher
+  action="/api/switch-org"
+  organizations={[
+    { id: 'org_123', name: 'Acme' },
+    { id: 'org_456', name: 'Globex' },
+  ]}
+/>
+```
 
 ## Client-island auth store
 
@@ -242,7 +276,7 @@ export const onRequest = authkitMiddleware({
 Or take full per-request control with the handler form:
 
 ```ts
-const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin(.*)', '/orgs/:slug/admin']);
 
 export const onRequest = authkitMiddleware((auth, context) => {
   if (isAdminRoute(context.url) && !auth.has({ role: 'admin' })) {
@@ -284,6 +318,22 @@ export const POST: APIRoute = async (context) => {
 };
 ```
 
+Use that endpoint with `<OrganizationSwitcher />`:
+
+```astro
+---
+import { OrganizationSwitcher } from '@workos/authkit-astro/components';
+---
+
+<OrganizationSwitcher
+  action="/api/switch-org"
+  organizations={[
+    { id: 'org_123', name: 'Acme' },
+    { id: 'org_456', name: 'Globex' },
+  ]}
+/>
+```
+
 ## WorkOS API access
 
 The full WorkOS Node client, sharing the SDK's configuration:
@@ -320,29 +370,32 @@ don't need the `WORKOS_*` secrets). On those pages:
 - `<SignedIn>` / `<SignedOut>` / `<Show>` defer to the client store and
   resolve after hydration (content is in the HTML — don't put secrets in it).
 - `<AuthState />` emits nothing; islands hydrate from the session endpoint.
+- Add `serverOnly` to `<SignedIn>`, `<SignedOut>`, or `<Show>` to render no
+  gated children during prerendering. For `<Show>`, the `fallback` slot is
+  rendered instead.
 
 ## API
 
-| Export                                 | Type                | Purpose                                                                |
-| -------------------------------------- | ------------------- | ---------------------------------------------------------------------- |
-| `default` (`workos`)                   | `AstroIntegration`  | The `astro add` integration                                            |
-| `authkitMiddleware(options?)`          | `MiddlewareHandler` | Validate session → `Astro.locals.auth`, refresh tokens, gate routes    |
-| `authkitMiddleware(handler, options?)` | `MiddlewareHandler` | Handler form: `(auth, context, next) =>` for full per-request control  |
-| `createRouteMatcher(patterns)`         | `(input) => bool`   | Reusable matcher for prefixes / patterns / RegExps / predicates        |
-| `configureAuthKit(config)`             | `void`              | Provide config explicitly (e.g. from `astro:env`)                      |
-| `getWorkOS()`                          | `WorkOS`            | The configured WorkOS Node client                                      |
-| `switchToOrganization(ctx, orgId)`     | `Promise<auth>`     | Switch the session's active organization                               |
-| `getSignInUrl(ctx, opts?)`             | `Promise<string>`   | Sign-in URL + writes PKCE verifier cookie (for custom links)           |
-| `getSignUpUrl(ctx, opts?)`             | `Promise<string>`   | Sign-up URL variant                                                    |
-| `handleSignIn` / `handleSignUp`        | `APIRoute`          | Drop-in GET handlers that redirect to AuthKit                          |
-| `handleCallback`                       | `APIRoute`          | Drop-in GET handler for the OAuth callback                             |
-| `handleSignOut`                        | `APIRoute`          | Drop-in GET handler that clears the session and logs out               |
-| `createCallbackHandler(opts?)`         | `() => APIRoute`    | Callback with `errorRedirect` / `onSuccess` / `onError`                |
-| `createSignOutHandler(opts?)`          | `() => APIRoute`    | Sign-out with a custom `afterSignOutUrl`                               |
-| `verifyWebhook(ctx, opts?)`            | `Promise<Event>`    | Verify + parse a WorkOS webhook request                                |
-| `@workos/authkit-astro/components`     | Astro components    | `AuthState`, `Show`, `SignedIn`, `SignedOut`, buttons, `Impersonation` |
-| `@workos/authkit-astro/client`         | nanostores          | `$auth`, `$user`, `$signedIn`, `$isLoaded`, …, `hydrateAuth`           |
-| `@workos/authkit-astro/react`          | hooks               | `useAuth()`, `useUser()` (no extra deps)                               |
+| Export                                 | Type                | Purpose                                                               |
+| -------------------------------------- | ------------------- | --------------------------------------------------------------------- |
+| `default` (`workos`)                   | `AstroIntegration`  | The `astro add` integration                                           |
+| `authkitMiddleware(options?)`          | `MiddlewareHandler` | Validate session → `Astro.locals.auth`, refresh tokens, gate routes   |
+| `authkitMiddleware(handler, options?)` | `MiddlewareHandler` | Handler form: `(auth, context, next) =>` for full per-request control |
+| `createRouteMatcher(patterns)`         | `(input) => bool`   | Reusable matcher for prefixes / patterns / RegExps / predicates       |
+| `configureAuthKit(config)`             | `void`              | Provide config explicitly (e.g. from `astro:env`)                     |
+| `getWorkOS()`                          | `WorkOS`            | The configured WorkOS Node client                                     |
+| `switchToOrganization(ctx, orgId)`     | `Promise<auth>`     | Switch the session's active organization                              |
+| `getSignInUrl(ctx, opts?)`             | `Promise<string>`   | Sign-in URL + writes PKCE verifier cookie (for custom links)          |
+| `getSignUpUrl(ctx, opts?)`             | `Promise<string>`   | Sign-up URL variant                                                   |
+| `handleSignIn` / `handleSignUp`        | `APIRoute`          | Drop-in GET handlers that redirect to AuthKit                         |
+| `handleCallback`                       | `APIRoute`          | Drop-in GET handler for the OAuth callback                            |
+| `handleSignOut`                        | `APIRoute`          | Drop-in GET handler that clears the session and logs out              |
+| `createCallbackHandler(opts?)`         | `() => APIRoute`    | Callback with `errorRedirect` / `onSuccess` / `onError`               |
+| `createSignOutHandler(opts?)`          | `() => APIRoute`    | Sign-out with a custom `afterSignOutUrl`                              |
+| `verifyWebhook(ctx, opts?)`            | `Promise<Event>`    | Verify + parse a WorkOS webhook request                               |
+| `@workos/authkit-astro/components`     | Astro components    | `AuthState`, gates/buttons, impersonation, user/org components        |
+| `@workos/authkit-astro/client`         | nanostores          | `$auth`, `$user`, `$signedIn`, `$isLoaded`, …, `hydrateAuth`          |
+| `@workos/authkit-astro/react`          | hooks               | `useAuth()`, `useUser()` (no extra deps)                              |
 
 ## How it works
 
