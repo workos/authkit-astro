@@ -4,5 +4,5 @@
   "trailingComma": "all",
   "printWidth": 120,
   "sortPackageJson": false,
-  "ignorePatterns": ["package-lock.json", "dist", "coverage", ".astro"]
+  "ignorePatterns": ["package-lock.json", "dist", "coverage", ".astro", "CHANGELOG.md", "README.md"]
 }
