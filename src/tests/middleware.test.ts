@@ -48,7 +48,7 @@ describe('authkitMiddleware', () => {
     expect(res.status).toBe(200);
   });
 
-  it('matches path-to-regexp style patterns', async () => {
+  it('matches path-to-regexp patterns', async () => {
     const middleware = authkitMiddleware({ protectedRoutes: ['/dashboard(.*)', '/orgs/:slug'] });
 
     const nested = makeContext({ cookies: makeCookies(), pathname: '/dashboard/settings', headers: HTML_HEADERS });

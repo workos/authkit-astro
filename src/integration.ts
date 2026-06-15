@@ -5,7 +5,7 @@ import { envField } from 'astro/config';
 export interface AuthkitIntegrationOptions {
   /**
    * Routes that require a signed-in user (anonymous visitors are redirected
-   * to `signInPath`). Plain strings are path prefixes; `path-to-regexp`-style
+   * to `signInPath`). Plain strings are path prefixes; `path-to-regexp` 6.x
    * patterns (`/dashboard(.*)`, `/orgs/:slug`) match the full pathname. For
    * RegExp / predicate matching, wire `authkitMiddleware` manually instead.
    */

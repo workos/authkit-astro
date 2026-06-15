@@ -25,10 +25,31 @@ describe('createRouteMatcher', () => {
     expect(matches('/orgs/')).toBe(false);
   });
 
-  it('compiles * wildcards', () => {
-    const matches = createRouteMatcher(['/files/*.pdf']);
+  it('supports repeat params', () => {
+    const matches = createRouteMatcher(['/files/:path*.pdf']);
     expect(matches('/files/report.pdf')).toBe(true);
+    expect(matches('/files/reports/2026/q1.pdf')).toBe(true);
     expect(matches('/files/report.txt')).toBe(false);
+  });
+
+  it('supports optional params', () => {
+    const matches = createRouteMatcher(['/orgs/:slug?']);
+    expect(matches('/orgs')).toBe(true);
+    expect(matches('/orgs/acme')).toBe(true);
+    expect(matches('/orgs/acme/settings')).toBe(false);
+  });
+
+  it('supports one-or-more repeat params', () => {
+    const matches = createRouteMatcher(['/blog/:slug+']);
+    expect(matches('/blog')).toBe(false);
+    expect(matches('/blog/intro')).toBe(true);
+    expect(matches('/blog/2026/intro')).toBe(true);
+  });
+
+  it('supports custom param regexes', () => {
+    const matches = createRouteMatcher(['/users/:id(\\d+)']);
+    expect(matches('/users/123')).toBe(true);
+    expect(matches('/users/abc')).toBe(false);
   });
 
   it('accepts RegExps and predicates', () => {
@@ -51,7 +72,7 @@ describe('createRouteMatcher', () => {
     expect(matches('/v1x0/abc')).toBe(false);
   });
 
-  it('throws on unbalanced groups', () => {
-    expect(() => createRouteMatcher(['/broken(.*'])('/x')).toThrow(/Unbalanced/);
+  it('surfaces path-to-regexp parse errors', () => {
+    expect(() => createRouteMatcher(['/broken(.*'])('/x')).toThrow(/Unbalanced pattern/);
   });
 });

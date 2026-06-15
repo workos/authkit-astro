@@ -121,7 +121,7 @@ export interface SignInOptions {
 
 /**
  * Which routes require authentication: a list of patterns (plain-string path
- * prefixes, `path-to-regexp`-style strings like `/dashboard(.*)` or
+ * prefixes, `path-to-regexp` 6.x strings like `/dashboard(.*)` or
  * `/orgs/:slug`, or RegExps) or a predicate over the pathname.
  */
 export type ProtectedRoutes = (string | RegExp)[] | ((pathname: string) => boolean);
