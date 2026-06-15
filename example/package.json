@@ -15,7 +15,7 @@
     "@nanostores/react": "^1.0.0",
     "@workos-inc/node": "^10.0.0",
     "@workos/authkit-astro": "file:..",
-    "astro": "^5.0.0",
+    "astro": "^6.1.10",
     "nanostores": "^1.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
