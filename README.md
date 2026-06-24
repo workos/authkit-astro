@@ -13,11 +13,14 @@ Individual pages may still opt into prerendering — see
 ## Quick start (integration)
 
 ```bash
-npx astro add @workos/authkit-astro
+npx astro add node @workos/authkit-astro
 ```
 
-`astro add` installs the package and adds the integration to your config. Or do
-it by hand:
+AuthKit needs on-demand rendering, so install a server adapter (`node` here, or
+your deployment target's adapter) alongside the integration — `astro add` wires
+up the adapter and `output`, then adds the integration to your config. Without
+an adapter the integration throws at startup, since its middleware and routes
+run per request. Or do it by hand:
 
 ```js
 // astro.config.mjs

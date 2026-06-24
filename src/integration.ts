@@ -163,7 +163,29 @@ hydrateAuth(endpoint);`,
         logger.info('WorkOS AuthKit wired (middleware + routes' + (hydrateClient ? ' + client store' : '') + ')');
       },
 
-      'astro:config:done': ({ injectTypes }) => {
+      'astro:config:done': ({ config, injectTypes, logger }) => {
+        // AuthKit needs on-demand rendering: the auth middleware, the
+        // login/signup/callback/logout handlers, and the `/_authkit/me` session
+        // endpoint all run per request and are injected as `prerender: false`
+        // routes. Those can't be served without a server adapter — and without
+        // one the failure is invisible: `astro dev` renders nothing for the
+        // `<SignedIn>` / `<SignedOut>` gates (the client store can never reach
+        // the session endpoint) and `astro build` only errors much later. Fail
+        // fast with the fix instead.
+        if ((injectRoutes || hydrateClient) && !config.adapter) {
+          logger.error('No server adapter found — AuthKit requires on-demand rendering.');
+          throw new Error(
+            '@workos/authkit-astro requires a server adapter for on-demand rendering. ' +
+              'Its middleware, the /login·/signup·/callback·/logout routes, and the ' +
+              `${sessionEndpoint} session endpoint all run per request.\n\n` +
+              'Add an adapter, e.g.:\n' +
+              '  npx astro add node\n\n' +
+              "then set `output: 'server'` (or mark individual auth pages with " +
+              '`export const prerender = false`).\n' +
+              'Docs: https://docs.astro.build/en/guides/on-demand-rendering/',
+          );
+        }
+
         // Guarantee `Astro.locals.auth` is typed even when the app never
         // imports the package from its own TS program.
         injectTypes({
