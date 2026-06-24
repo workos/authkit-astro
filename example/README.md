@@ -5,7 +5,7 @@ A minimal Astro app using the [`@workos/authkit-astro`](../) **integration**.
 The entire integration is one line in `astro.config.mjs`:
 
 ```js
-integrations: [workos({ protectedRoutes: ['/dashboard'] })];
+integrations: [authkit({ protectedRoutes: ['/dashboard'] })];
 ```
 
 That auto-wires the auth middleware, the `/login` `/signup` `/callback`

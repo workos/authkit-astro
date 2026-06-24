@@ -22,13 +22,13 @@ it by hand:
 ```js
 // astro.config.mjs
 import node from '@astrojs/node';
-import workos from '@workos/authkit-astro';
+import authkit from '@workos/authkit-astro';
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   output: 'server',
   adapter: node({ mode: 'standalone' }),
-  integrations: [workos({ protectedRoutes: ['/dashboard'] })],
+  integrations: [authkit({ protectedRoutes: ['/dashboard'] })],
 });
 ```
 
@@ -72,7 +72,7 @@ const { auth } = Astro.locals;
 ### Integration options
 
 ```ts
-workos({
+authkit({
   protectedRoutes: ['/dashboard(.*)'], // prefixes or path-to-regexp 6.x patterns
   signInPath: '/login', // where anonymous visitors are sent
   loginPath: '/login', // patterns for the injected routes

@@ -47,13 +47,13 @@ const RESOLVED_VIRTUAL_ID = '\0' + VIRTUAL_ID;
  * @example
  * ```js
  * // astro.config.mjs
- * import workos from '@workos/authkit-astro';
+ * import authkit from '@workos/authkit-astro';
  * export default defineConfig({
- *   integrations: [workos({ protectedRoutes: ['/dashboard'] })],
+ *   integrations: [authkit({ protectedRoutes: ['/dashboard'] })],
  * });
  * ```
  */
-export default function workos(options: AuthkitIntegrationOptions = {}): AstroIntegration {
+export default function authkit(options: AuthkitIntegrationOptions = {}): AstroIntegration {
   const {
     protectedRoutes = [],
     signInPath = '/login',

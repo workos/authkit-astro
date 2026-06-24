@@ -1,7 +1,7 @@
 // @ts-check
 import node from '@astrojs/node';
 import react from '@astrojs/react';
-import workos from '@workos/authkit-astro';
+import authkit from '@workos/authkit-astro';
 import { defineConfig } from 'astro/config';
 
 // The WorkOS integration auto-wires the auth middleware, the
@@ -12,7 +12,7 @@ export default defineConfig({
   adapter: node({ mode: 'standalone' }),
   integrations: [
     react(),
-    workos({
+    authkit({
       protectedRoutes: ['/dashboard'],
     }),
   ],
