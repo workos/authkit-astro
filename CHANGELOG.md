@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.0](https://github.com/workos/authkit-astro/compare/v0.1.1...v0.2.0) (2026-06-24)
+
+
+### Features
+
+* Fail fast when no server adapter is configured ([f7ebdd3](https://github.com/workos/authkit-astro/commit/f7ebdd32e3c669d7f9eaa6c41f16346f980d09f9))
+
+
+### Bug Fixes
+
+* cleaner export name ([221c541](https://github.com/workos/authkit-astro/commit/221c5417f5462826027b69350561602ee721838e))
+
 ## [0.1.1](https://github.com/workos/authkit-astro/compare/v0.1.0...v0.1.1) (2026-06-24)
 
 
