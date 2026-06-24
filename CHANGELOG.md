@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/workos/authkit-astro/compare/v0.1.0...v0.1.1) (2026-06-24)
+
+
+### Bug Fixes
+
+* **deps:** allow Astro 7 as a peer dependency ([#6](https://github.com/workos/authkit-astro/issues/6)) ([3a980d3](https://github.com/workos/authkit-astro/commit/3a980d3a1a5f3363664b10690340c8c7f0b98d10))
+
 ## [0.1.0](https://github.com/workos/authkit-astro/compare/v0.0.1...v0.1.0) (2026-06-15)
 
 
