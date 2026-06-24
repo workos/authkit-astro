@@ -1,6 +1,6 @@
 {
   "name": "@workos/authkit-astro",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Official WorkOS AuthKit SDK for Astro",
   "type": "module",
   "sideEffects": [
