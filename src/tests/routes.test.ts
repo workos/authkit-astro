@@ -112,6 +112,17 @@ describe('handleSignOut', () => {
     expect(res.headers.get('Location')).toBe('/goodbye');
   });
 
+  it('strips control chars from a returnTo that stays a valid relative path', async () => {
+    // `/good\tbye` normalises to `/goodbye`; it should redirect there, not fall back to `/`.
+    const ctx = makeContext({
+      cookies: makeCookies(),
+      search: `?returnTo=${encodeURIComponent('/good\tbye')}`,
+      locals: { auth: { user: null } },
+    }) as APIContext;
+    const res = await handleSignOut(ctx);
+    expect(res.headers.get('Location')).toBe('/goodbye');
+  });
+
   it('rejects absolute and protocol-relative returnTo values (open redirect)', async () => {
     for (const evil of [
       'https://evil.test',
