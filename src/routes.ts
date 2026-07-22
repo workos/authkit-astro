@@ -10,8 +10,14 @@ import type { CallbackHandlerOptions, CookieContext, SignInOptions, SignOutHandl
  */
 function safeReturnTo(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
-  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return undefined;
-  return value;
+  // URL parsers (browsers + Node `new URL()`) strip ASCII tab, newline, and
+  // carriage return before parsing, so `/<TAB>/evil.com` collapses into the
+  // protocol-relative `//evil.com`. Normalise the value the same way before
+  // validating, otherwise those characters smuggle an off-site redirect past
+  // the checks below.
+  const normalized = value.replace(/[\t\n\r]/g, '');
+  if (!normalized.startsWith('/') || normalized.startsWith('//') || normalized.includes('\\')) return undefined;
+  return normalized;
 }
 
 /**

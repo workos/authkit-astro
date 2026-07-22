@@ -113,7 +113,15 @@ describe('handleSignOut', () => {
   });
 
   it('rejects absolute and protocol-relative returnTo values (open redirect)', async () => {
-    for (const evil of ['https://evil.test', '//evil.test', '/\\evil.test']) {
+    for (const evil of [
+      'https://evil.test',
+      '//evil.test',
+      '/\\evil.test',
+      // URL parsers strip tab/newline/CR, collapsing these into `//evil.test`.
+      '/\t/evil.test',
+      '/\n/evil.test',
+      '/\r/evil.test',
+    ]) {
       const ctx = makeContext({
         cookies: makeCookies(),
         search: `?returnTo=${encodeURIComponent(evil)}`,
