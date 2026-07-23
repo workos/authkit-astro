@@ -12,12 +12,13 @@ function safeReturnTo(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
   // URL parsers (browsers + Node `new URL()`) strip ASCII tab, newline, and
   // carriage return before parsing, so `/<TAB>/evil.com` collapses into the
-  // protocol-relative `//evil.com`. Normalise the value the same way before
-  // validating, otherwise those characters smuggle an off-site redirect past
-  // the checks below.
-  const normalized = value.replace(/[\t\n\r]/g, '');
-  if (!normalized.startsWith('/') || normalized.startsWith('//') || normalized.includes('\\')) return undefined;
-  return normalized;
+  // protocol-relative `//evil.com`. No legitimate returnTo contains control
+  // characters, so fail closed on any C0 control (or DEL) rather than trying
+  // to mirror the parser's normalization.
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(value)) return undefined;
+  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return undefined;
+  return value;
 }
 
 /**
