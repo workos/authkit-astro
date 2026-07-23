@@ -1,6 +1,6 @@
 import type { APIContext } from 'astro';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import { configureAuthKit } from '../config.js';
+import { configureAuthKit, getInstance } from '../config.js';
 import {
   createCallbackHandler,
   createSignOutHandler,
@@ -39,6 +39,20 @@ describe('handleCallback', () => {
     const ctx = makeContext({ cookies: makeCookies(), pathname: '/callback' });
     const res = await handleCallback(ctx);
     expect(res.status).toBe(400);
+  });
+
+  it('sanitizes a smuggled returnPathname from the OAuth state round-trip (open redirect)', async () => {
+    const spy = vi
+      .spyOn(getInstance(), 'handleCallback')
+      .mockResolvedValue({ returnPathname: '/\t/evil.test', authResponse: {} } as never);
+    try {
+      const ctx = makeContext({ cookies: makeCookies(), pathname: '/callback', search: '?code=abc123' });
+      const res = await handleCallback(ctx);
+      expect(res.status).toBe(302);
+      expect(res.headers.get('Location')).toBe('/');
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it('400s and clears the verifier on a WorkOS ?error', async () => {
@@ -112,8 +126,28 @@ describe('handleSignOut', () => {
     expect(res.headers.get('Location')).toBe('/goodbye');
   });
 
+  it('rejects a returnTo containing control chars even when it would stay relative', async () => {
+    // Fail closed: `/good\tbye` could normalise to `/goodbye`, but no
+    // legitimate returnTo contains control characters, so it falls back to `/`.
+    const ctx = makeContext({
+      cookies: makeCookies(),
+      search: `?returnTo=${encodeURIComponent('/good\tbye')}`,
+      locals: { auth: { user: null } },
+    }) as APIContext;
+    const res = await handleSignOut(ctx);
+    expect(res.headers.get('Location')).toBe('/');
+  });
+
   it('rejects absolute and protocol-relative returnTo values (open redirect)', async () => {
-    for (const evil of ['https://evil.test', '//evil.test', '/\\evil.test']) {
+    for (const evil of [
+      'https://evil.test',
+      '//evil.test',
+      '/\\evil.test',
+      // URL parsers strip tab/newline/CR, collapsing these into `//evil.test`.
+      '/\t/evil.test',
+      '/\n/evil.test',
+      '/\r/evil.test',
+    ]) {
       const ctx = makeContext({
         cookies: makeCookies(),
         search: `?returnTo=${encodeURIComponent(evil)}`,

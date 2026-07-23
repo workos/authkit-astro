@@ -10,6 +10,13 @@ import type { CallbackHandlerOptions, CookieContext, SignInOptions, SignOutHandl
  */
 function safeReturnTo(value: string | null | undefined): string | undefined {
   if (!value) return undefined;
+  // URL parsers (browsers + Node `new URL()`) strip ASCII tab, newline, and
+  // carriage return before parsing, so `/<TAB>/evil.com` collapses into the
+  // protocol-relative `//evil.com`. No legitimate returnTo contains control
+  // characters, so fail closed on any C0 control (or DEL) rather than trying
+  // to mirror the parser's normalization.
+  // eslint-disable-next-line no-control-regex
+  if (/[\x00-\x1f\x7f]/.test(value)) return undefined;
   if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return undefined;
   return value;
 }
