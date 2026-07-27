@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/workos/authkit-astro/compare/v0.2.0...v0.2.1) (2026-07-27)
+
+
+### Bug Fixes
+
+* Reject control chars in returnTo sanitizer ([#12](https://github.com/workos/authkit-astro/issues/12)) ([b7f328c](https://github.com/workos/authkit-astro/commit/b7f328c27ed893ffc23249b6c7a41769cb385d32))
+
 ## [0.2.0](https://github.com/workos/authkit-astro/compare/v0.1.1...v0.2.0) (2026-06-24)
 
 
