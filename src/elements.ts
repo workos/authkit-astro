@@ -39,5 +39,3 @@ if (typeof customElements !== 'undefined' && !customElements.get('authkit-gate')
 
   customElements.define('authkit-gate', AuthKitGate);
 }
-
-export {};
