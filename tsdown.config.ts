@@ -17,7 +17,7 @@ export default defineConfig({
   // ESM-only, like the rest of the Astro ecosystem.
   format: 'esm',
   platform: 'node',
-  // Emit `.js`/`.d.ts` (honouring `"type": "module"`) rather than tsdown's
+  // Emit `.js`/`.d.ts` (honoring `"type": "module"`) rather than tsdown's
   // node-default `.mjs`/`.d.mts`, so the paths match the package.json exports.
   fixedExtension: false,
   // Public type surface only — internal entrypoints are consumed by Astro at
