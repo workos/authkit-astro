@@ -4,7 +4,7 @@ import { getInstance } from './config.js';
 import type { CallbackHandlerOptions, CookieContext, SignInOptions, SignOutHandlerOptions } from './types.js';
 
 /**
- * Keep `returnTo` values on-site: only relative paths are honoured, never
+ * Keep `returnTo` values on-site: only relative paths are honored, never
  * absolute (`https://…`) or protocol-relative (`//…`) URLs — otherwise the
  * login/logout flows become open redirects.
  */
@@ -70,7 +70,7 @@ export const handleSignUp: APIRoute = async (context) => {
 };
 
 /**
- * Build a callback GET handler with custom behaviour — an error redirect
+ * Build a callback GET handler with custom behavior — an error redirect
  * instead of a 400, or `onSuccess` / `onError` hooks.
  *
  * @example
@@ -143,7 +143,7 @@ export const handleCallback: APIRoute = createCallbackHandler();
 
 /**
  * Build a sign-out GET handler with a custom post-sign-out destination. The
- * handler also honours a `?returnTo=` query param (relative paths only).
+ * handler also honors a `?returnTo=` query param (relative paths only).
  *
  * @example
  * ```ts

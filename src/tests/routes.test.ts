@@ -116,7 +116,7 @@ describe('handleSignOut', () => {
     expect(res.headers.get('Location')).toBe('/');
   });
 
-  it('honours a relative ?returnTo=', async () => {
+  it('honors a relative ?returnTo=', async () => {
     const ctx = makeContext({
       cookies: makeCookies(),
       search: '?returnTo=/goodbye',
@@ -127,7 +127,7 @@ describe('handleSignOut', () => {
   });
 
   it('rejects a returnTo containing control chars even when it would stay relative', async () => {
-    // Fail closed: `/good\tbye` could normalise to `/goodbye`, but no
+    // Fail closed: `/good\tbye` could normalize to `/goodbye`, but no
     // legitimate returnTo contains control characters, so it falls back to `/`.
     const ctx = makeContext({
       cookies: makeCookies(),

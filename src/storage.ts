@@ -15,7 +15,7 @@ type AstroCookieSetOptions = NonNullable<Parameters<AstroCookies['set']>[2]>;
  *
  * `signOut()` in `@workos/authkit-session` clears the session with an
  * `undefined` store, so `setCookie`/`clearCookie` fall back to the base
- * headers-only behaviour in that case.
+ * headers-only behavior in that case.
  */
 export class AstroSessionStorage extends CookieSessionStorage<AstroCookies, AstroCookies> {
   async getCookie(cookies: AstroCookies, name: string): Promise<string | null> {

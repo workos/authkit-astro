@@ -186,7 +186,7 @@ export interface CallbackHandlerOptions {
   ) => Promise<Response | string | void> | Response | string | void;
   /**
    * Called when the callback fails. Return a `Response` to take over;
-   * otherwise the `errorRedirect` / 400 behaviour applies.
+   * otherwise the `errorRedirect` / 400 behavior applies.
    */
   onError?: (context: APIContext, error: Error) => Promise<Response | void> | Response | void;
 }

@@ -95,7 +95,7 @@ describe('buildAuth', () => {
     });
   });
 
-  it('honours a custom returnTo in redirectToSignIn', () => {
+  it('honors a custom returnTo in redirectToSignIn', () => {
     const ctx = makeContext({ cookies: makeCookies(), pathname: '/a' });
     const auth = buildAuth(null, ctx, '/sign-in');
     expect(auth.redirectToSignIn({ returnTo: '/b' }).headers.get('Location')).toBe('/sign-in?returnTo=%2Fb');
