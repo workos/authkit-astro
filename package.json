@@ -83,7 +83,7 @@
     "access": "public"
   },
   "peerDependencies": {
-    "@workos-inc/node": "^10.0.0",
+    "@workos-inc/node": "^10.0.0 || ^11.0.0 || ^12.0.0",
     "astro": "^6.0.0 || ^7.0.0",
     "react": "^18.0.0 || ^19.0.0"
   },
@@ -104,7 +104,7 @@
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
     "@vitest/coverage-v8": "^4.1.8",
-    "@workos-inc/node": "^10.2.0",
+    "@workos-inc/node": "^12.1.0",
     "astro": "^7.0.2",
     "oxfmt": "^0.72.0",
     "oxlint": "^1.69.0",
