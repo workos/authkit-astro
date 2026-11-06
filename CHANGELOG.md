@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.2](https://github.com/workos/authkit-astro/compare/v0.2.1...v0.2.2) (2026-11-06)
+
+
+### Bug Fixes
+
+* **deps:** Bump @workos/authkit-session to ^0.9.1 ([#44](https://github.com/workos/authkit-astro/issues/44)) ([dad9ba9](https://github.com/workos/authkit-astro/commit/dad9ba9f0042569feac48b802599b50e366a8ba5))
+* **deps:** support @workos-inc/node 12 ([#45](https://github.com/workos/authkit-astro/issues/45)) ([ea7a6c4](https://github.com/workos/authkit-astro/commit/ea7a6c4ab218809be7a1381821088fbf08a4cbc3))
+* **deps:** update minor and patch updates ([#19](https://github.com/workos/authkit-astro/issues/19)) ([fcd32f4](https://github.com/workos/authkit-astro/commit/fcd32f4af55677552ba3eb563407f25122a27323))
+
 ## [0.2.1](https://github.com/workos/authkit-astro/compare/v0.2.0...v0.2.1) (2026-07-27)
 
 
